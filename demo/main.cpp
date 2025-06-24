@@ -1,4 +1,4 @@
-#include "../inc/logentia.hpp"
+#include <logentia.hpp>
 
 #include <iostream>
 
