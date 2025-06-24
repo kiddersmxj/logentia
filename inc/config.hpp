@@ -1,21 +1,30 @@
 #ifndef K_CONFIG_LOGENTIA
 #define K_CONFIG_LOGENTIA
 
-#include <iostream>
 #include <std-k.hpp>
 
-// Define configuration variables with or without default values using inline
-inline std::vector<std::string> ExampleArray = {};
-inline std::string ExampleString;
-inline bool ExampleBool;
-inline int ExampleInt;
+#include <iostream>
+#include <string>
+#include <vector>
 
-const std::string ConfigFilePath = "config.conf";
-// Function to initialize global configuration variables
-int InitConfig();
+namespace logentia {
+    namespace config {
+        extern bool ToggleTopics;
+        extern bool ToggleColour;
+        extern bool ToggleTerminal;
+        extern bool ToggleFile;
+
+        extern int MaxLevel;
+        extern std::string FilePath;
+        extern std::string ProjectName;
+        extern std::vector<std::string> TopicList;
+    }
+
+    int Init();
+}
 
 const std::string ProgramName = "logentia";
-const std::string Version = "0.0.0";
+const std::string Version = "0.1.0";
 const std::string UsageNotes = R"(usage: logentia [ -h/-v ]
 options:
     -h / --help         show help and usage notes

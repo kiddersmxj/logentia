@@ -2,7 +2,16 @@
 #define K_LOGENTIA
 
 #include "config.hpp"
-#include <getopt.h>
+
+#include <string_view>
+#include <source_location>
+
+namespace logentia {
+    void log(std::string_view msg, std::string_view topic, int level);
+    void time_log(std::string_view msg, std::string_view topic, int level);
+    void detailed_log(std::string_view msg, std::string_view topic, int level,
+                      const std::source_location& loc = std::source_location::current());
+}
 
 #endif
 

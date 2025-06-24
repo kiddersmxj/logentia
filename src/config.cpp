@@ -1,20 +1,55 @@
 #include "../inc/config.hpp"
+#include "../inc/defaults.hpp"
+#include <iostream>
+#include <std-k.hpp>
 
-int InitConfig() {
-    // Load configuration file using the singleton Config instance
-    if (!k::config::Config::getInstance().load(ConfigFilePath)) {
-        std::cerr << "Failed to load config file: " << ConfigFilePath << std::endl;
-        // Handle error as needed
+namespace logentia {
+namespace config {
+
+// —— compile‑time defaults ——
+bool ToggleTopics   = true;
+bool ToggleColour   = true;
+bool ToggleTerminal = true;
+bool ToggleFile     = true;
+
+int MaxLevel = 3;
+std::string FilePath    = "/log";                // root directory
+std::string ProjectName = "logentia_project";     // used if conf missing
+std::vector<std::string> TopicList;               // empty ⇒ all topics
+// ————————————————
+
+} // namespace config
+
+int Init() {
+    const std::string ProjectConfig = "logentia.conf";
+    auto& cfg = k::config::Config::getInstance();
+
+    if (!cfg.load(ProjectConfig)) {
+        std::cerr << "[LOGENTIA] Could not load '" << ProjectConfig
+                  << "'; using built‑in defaults.\n";
         return 1;
     }
 
-    KCONFIG_ARRAY_REQUIRED(ExampleArray, "example.array")
-    KCONFIG_VAR_REQUIRED(ExampleString, "example.string")
-    KCONFIG_VAR_REQUIRED(ExampleBool, "example.bool")
-    KCONFIG_VAR(ExampleInt, "example.int", 10)
+    // [toggle]
+    KCONFIG_VAR(config::ToggleTopics,   "toggle.topics",   config::ToggleTopics);
+    KCONFIG_VAR(config::ToggleColour,   "toggle.colour",   config::ToggleColour);
+    KCONFIG_VAR(config::ToggleTerminal, "toggle.terminal", config::ToggleTerminal);
+    KCONFIG_VAR(config::ToggleFile,     "toggle.file",     config::ToggleFile);
+
+    // [general]
+    KCONFIG_VAR(config::MaxLevel,  "general.max_level", config::MaxLevel);
+    KCONFIG_VAR(config::FilePath,  "general.file_path", config::FilePath);
+
+    // [project]
+    KCONFIG_VAR(config::ProjectName, "project.name", config::ProjectName);
+
+    // [list]
+    KCONFIG_ARRAY(config::TopicList, "list.topics", config::TopicList);
 
     return 0;
 }
+
+} // namespace logentia
 
 void Usage() {
     std::cout << UsageNotes << std::endl;
