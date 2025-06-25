@@ -13,6 +13,7 @@ namespace logentia {
         extern bool ToggleColour;
         extern bool ToggleTerminal;
         extern bool ToggleFile;
+        extern bool AsyncMode;
 
         extern int MaxLevel;
         extern std::string FilePath;
