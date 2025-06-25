@@ -50,17 +50,3 @@ namespace logentia {
         return 0;
     }
 } // namespace logentia
-
-void Usage() {
-    std::cout << UsageNotes << std::endl;
-}
-
-void Usage(std::string Message) {
-    std::cout << Message << std::endl;
-    std::cout << UsageNotes << std::endl;
-}
-
-void PrintVersion() {
-    std::cout << ProgramName << ": version " << Version << std::endl;
-}
-

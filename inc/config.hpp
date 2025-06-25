@@ -24,17 +24,6 @@ namespace logentia {
     int Init();
 }
 
-const std::string ProgramName = "logentia";
-const std::string Version = "0.1.0";
-const std::string UsageNotes = R"(usage: logentia [ -h/-v ]
-options:
-    -h / --help         show help and usage notes
-    -v / --version      print version and exit)";
-
-void Usage();
-void Usage(std::string Message);
-void PrintVersion();
-
 #endif
 
 // Copyright (c) 2024, Maxamilian Kidd-May
