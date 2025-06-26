@@ -2,6 +2,7 @@
 #define K_LOGENTIA
 
 #include "config.hpp"
+#include <atomic>
 #include <string_view>
 #include <source_location>
 
@@ -26,6 +27,28 @@ namespace logentia {
     /// Start / stop the background writer explicitly (normally automatic).
     void init_async_writer();
     void shutdown_async_writer();
+    class tapbuf : public std::streambuf {
+        std::streambuf*  upstream_;
+    public:
+        explicit tapbuf(std::streambuf* real) : upstream_(real) {}
+        static std::atomic<bool> last_was_nl;
+
+    protected:
+        int overflow(int ch) override {
+            if (ch != EOF) {
+                if (ch == '\n') last_was_nl = true;
+                else            last_was_nl = false;
+                upstream_->sputc(static_cast<char>(ch));
+            }
+            return ch;
+        }
+        int sync() override { return upstream_->pubsync(); }
+    };
+
+    inline std::atomic<bool> tapbuf::last_was_nl{true};
+
+    /// Replace cout/cerr buffers with tapped ones (call once at program start).
+    void hook_standard_streams();
 }
 
 #endif /* K_LOGENTIA */

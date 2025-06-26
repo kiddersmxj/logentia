@@ -29,6 +29,8 @@ void single_named_task()
     // Give this thread a custom name
     logentia::set_thread_name("Uploader");
 
+    std::cout << "annoying output";
+
     const std::string topic = "SINGLE";
     logentia::log("Uploader thread started", topic, 3);
 
@@ -44,6 +46,7 @@ void single_named_task()
 int main()
 {
     logentia::Init();
+    logentia::hook_standard_streams();
 
     logentia::log("System booting …", "CORE", 3);
     logentia::time_log("Initialising BLE stack", "BLE", 4);

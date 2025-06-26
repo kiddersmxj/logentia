@@ -108,6 +108,7 @@ namespace {
     {
         // ── terminal
         if (config::ToggleTerminal) {
+            if (!tapbuf::last_was_nl) { std::cout.put('\n'); }
             if (config::ToggleColour) {
                 const char* col =
                     (lvl==1) ? "\033[1;31m" : (lvl==2) ? "\033[1;35m" :
@@ -188,9 +189,19 @@ namespace {
 
 } // anon
 
+static tapbuf tap_cout{std::cout.rdbuf()};
+static tapbuf tap_cerr{std::cerr.rdbuf()};
+
 // ─────────────────────────────────────────────────────────────
 //  Public helpers
 // ─────────────────────────────────────────────────────────────
+
+void hook_standard_streams() {
+    std::cout.rdbuf(&tap_cout);
+    std::cerr.rdbuf(&tap_cerr);
+    tapbuf::last_was_nl = true;   // assume clean line at start
+}
+
 void init_async_writer()          { std::call_once(start_flag, start_async); }
 void shutdown_async_writer()
 {
