@@ -179,10 +179,14 @@ namespace {
 
     bool topic_allowed(std::string_view topic)
     {
-        if (!config::ToggleTopics)          return true;
-        if (config::TopicList.empty())      return true;
-        for (const auto& t : config::TopicList)
+        using namespace logentia::config;
+        if (!ToggleTopics) return true;
+        if (TopicList.empty()) return true;
+
+        for (const auto& t : TopicList) {
+            if (t == "*" || t == "all") return true;
             if (t == topic) return true;
+        }
         return false;
     }
 
