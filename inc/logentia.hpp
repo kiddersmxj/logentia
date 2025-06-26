@@ -36,7 +36,7 @@ namespace logentia {
     protected:
         int overflow(int ch) override {
             if (ch != EOF) {
-                if (ch == '\n') last_was_nl = true;
+                if (ch == '\n' || ch == '\r') last_was_nl = true;
                 else            last_was_nl = false;
                 upstream_->sputc(static_cast<char>(ch));
             }
