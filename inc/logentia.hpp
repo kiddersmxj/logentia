@@ -8,6 +8,8 @@
 
 namespace logentia {
 
+    void start();
+
     // ─────────── public log calls ───────────
     void log(std::string_view msg, std::string_view topic, int level);
     void time_log(std::string_view msg, std::string_view topic, int level);

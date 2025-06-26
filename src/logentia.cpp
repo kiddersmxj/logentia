@@ -21,6 +21,7 @@ namespace logentia {
 namespace {
 
     // ── global sinks & mutexes
+    std::mutex              terminal_mtx;
     std::mutex              sink_mtx;        // guards terminal + file writes
     std::ofstream           file_stream;
     bool                    file_ready = false;
@@ -38,6 +39,12 @@ namespace {
     thread_local std::string tl_name;
     thread_local int         tl_numeric_id = 0;
     std::atomic<int>         numeric_counter{1};        // T1, T2, …
+
+    thread_local bool internal_emit = false;   // true while Logentia is printing
+    struct GuardInternal {
+        GuardInternal()  { internal_emit = true;  }
+        ~GuardInternal() { internal_emit = false; }
+    };
 
     // ───────────────────── helpers ──────────────────────
     std::string timestamp()
@@ -106,18 +113,30 @@ namespace {
 
     void emit_to_sinks(const std::string& line, int lvl)
     {
+        GuardInternal g; 
+
         // ── terminal
-        if (config::ToggleTerminal) {
-            if (!tapbuf::last_was_nl) { std::cout.put('\n'); }
+        if (config::ToggleTerminal)
+        {
+            std::lock_guard<std::mutex> lk(terminal_mtx);   // ➊ LOCK FIRST
+
+            std::string out_line;
             if (config::ToggleColour) {
                 const char* col =
-                    (lvl==1) ? "\033[1;31m" : (lvl==2) ? "\033[1;35m" :
-                    (lvl==3) ? "\033[1;33m" : (lvl==4) ? "\033[1;32m" :
-                    (lvl==5) ? "\033[1;36m" : "\033[0m";
-                std::cout << col << line.substr(0,6) << "\033[0m" << line.substr(6);
+                   (lvl==1) ? "\033[1;31m" : (lvl==2) ? "\033[1;35m" :
+                   (lvl==3) ? "\033[1;33m" : (lvl==4) ? "\033[1;32m" :
+                   (lvl==5) ? "\033[1;36m" : "\033[0m";
+
+                out_line.reserve(line.size() + 20);
+                out_line += col;
+                out_line += line.substr(0,6);
+                out_line += "\033[0m";
+                out_line += line.substr(6);
             } else {
-                std::cout << line;
+                out_line = line;
             }
+
+            std::cout << out_line;        // ➋ single atomic write
             std::cout.flush();
         }
 
@@ -191,6 +210,59 @@ namespace {
         return false;
     }
 
+    class tracking_buf : public std::streambuf {
+        std::streambuf* orig_;
+        std::string     pending_;
+    public:
+        explicit tracking_buf(std::streambuf* o) : orig_(o) {}
+
+    protected:
+        int overflow(int ch) override
+        {
+            if (!internal_emit) {                        // external write
+                std::lock_guard<std::mutex> lk(terminal_mtx);
+                if (ch != EOF) pending_.push_back(static_cast<char>(ch));
+                if (ch == '\n' || ch == '\r') flush_pending();
+                return orig_->sputc(ch);
+            }
+            // internal emit: just forward
+            return orig_->sputc(ch);
+        }
+
+        std::streamsize xsputn(const char* s, std::streamsize n) override
+        {
+            if (!internal_emit) {
+                std::lock_guard<std::mutex> lk(terminal_mtx);
+                pending_.append(s, n);
+                if (pending_.find_first_of("\n\r") != std::string::npos)
+                    flush_pending();
+                return orig_->sputn(s, n);
+            }
+            return orig_->sputn(s, n);
+        }
+                int sync() override {
+                    if (!pending_.empty()) flush_pending();
+                    return orig_->pubsync();
+                }
+
+    private:
+        void flush_pending() {
+            size_t pos;
+            while ((pos = pending_.find_first_of("\r\n")) != std::string::npos) {
+                std::string line = pending_.substr(0, pos);
+                pending_.erase(0, pos + 1);
+                if (!line.empty())
+                    forward_external(line);
+            }
+        }
+
+        static void forward_external(const std::string& txt) {
+            // Format like normal line; use highest allowed level
+            std::string full = "[EXTERNAL] " + txt + '\n';
+            emit_to_sinks(full, config::MaxLevel);
+        }
+    };
+
 } // anon
 
 static tapbuf tap_cout{std::cout.rdbuf()};
@@ -241,6 +313,19 @@ std::string format_body(std::string_view title, std::string_view body) {
 // ─────────────────────────────────────────────────────────────
 //  Front-end API
 // ─────────────────────────────────────────────────────────────
+
+void start() {
+    Init();
+
+    static bool wrap_done = false;
+    if (!wrap_done) {
+        static tracking_buf cout_buf(std::cout.rdbuf());
+        static tracking_buf cerr_buf(std::cerr.rdbuf());
+        std::cout.rdbuf(&cout_buf);
+        std::cerr.rdbuf(&cerr_buf);
+        wrap_done = true;
+    }
+}
 
 void set_thread_name(const std::string& name) { tl_name = name; }
 

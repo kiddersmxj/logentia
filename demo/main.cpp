@@ -45,7 +45,7 @@ void single_named_task()
 
 int main()
 {
-    logentia::Init();
+    logentia::start();
     logentia::hook_standard_streams();
 
     logentia::log("System booting …", "CORE", 3);
