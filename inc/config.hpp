@@ -16,6 +16,7 @@ namespace logentia {
         extern bool AsyncMode;
 
         extern int MaxLevel;
+        extern int  DetailLevel;
         extern std::string FilePath;
         extern std::string ProjectName;
         extern std::vector<std::string> TopicList;

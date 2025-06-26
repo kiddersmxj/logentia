@@ -13,6 +13,7 @@ namespace logentia {
     bool AsyncMode      = true;
 
     int MaxLevel = 3;
+    int  DetailLevel   = 0;
     std::string FilePath    = "/log";                // root directory
     std::string ProjectName = "logentia_project";     // used if conf missing
     std::vector<std::string> TopicList;               // empty ⇒ all topics
@@ -39,6 +40,7 @@ namespace logentia {
 
         // [general]
         KCONFIG_VAR(config::MaxLevel,  "general.max_level", config::MaxLevel);
+        KCONFIG_VAR(config::DetailLevel, "general.detail_level", config::DetailLevel);
         KCONFIG_VAR(config::FilePath,  "general.file_path", config::FilePath);
 
         // [project]
