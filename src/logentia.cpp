@@ -1,5 +1,4 @@
 #include "../inc/logentia.hpp"
-#include "../inc/config.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -212,10 +211,26 @@ inline bool want_loc(Req r) {
     return r == Req::Full || config::DetailLevel >= 2;
 }
 
-void set_thread_name(const std::string& name) { tl_name = name; }
+std::string format_body(std::string_view title, std::string_view body) {
+    std::ostringstream oss;
+    oss << title << '\n';
+    std::string indent(config::IndentSpaces, ' ');
+    std::istringstream iss((std::string(body)));
+    std::string line;
+    while (std::getline(iss, line)) {
+        oss << indent << line << '\n';
+    }
+    return oss.str();
+}
 
 // ─────────────────────────────────────────────────────────────
 //  Front-end API
+// ─────────────────────────────────────────────────────────────
+
+void set_thread_name(const std::string& name) { tl_name = name; }
+
+// ─────────────────────────────────────────────────────────────
+//  Overloads with title + body
 // ─────────────────────────────────────────────────────────────
 
 void log(std::string_view msg, std::string_view topic, int lvl) {
@@ -278,6 +293,22 @@ void detailed_log(std::string_view msg, std::string_view topic, int lvl,
         std::lock_guard<std::mutex> g(sink_mtx);
         emit_to_sinks(line, lvl);
     }
+}
+
+void log(std::string_view title, std::string_view body, std::string_view topic, int lvl) {
+    const std::string full = format_body(title, body);
+    log(full, topic, lvl);  // reuse single-line version
+}
+
+void time_log(std::string_view title, std::string_view body, std::string_view topic, int lvl) {
+    const std::string full = format_body(title, body);
+    time_log(full, topic, lvl);
+}
+
+void detailed_log(std::string_view title, std::string_view body, std::string_view topic, int lvl,
+                  const std::source_location& loc) {
+    const std::string full = format_body(title, body);
+    detailed_log(full, topic, lvl, loc);
 }
 
 } // namespace logentia

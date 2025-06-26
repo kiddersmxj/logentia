@@ -50,6 +50,8 @@ int main()
     logentia::detailed_log("Sensor value out of range", "SENSOR", 2);
     logentia::log("Verbose trace line", "DEBUG", 5);
 
+    logentia::log("Big Message:", "Very Long\nMulti-Paragraph\nMessage", "DEBUG", 3);
+
     constexpr std::size_t thread_count = 4;
     constexpr std::size_t iterations = 5;
 

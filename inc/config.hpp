@@ -18,6 +18,9 @@ namespace logentia {
         extern int MaxLevel;
         extern int  DetailLevel;
         extern std::string FilePath;
+
+        extern int IndentSpaces;
+
         extern std::string ProjectName;
         extern std::vector<std::string> TopicList;
     }

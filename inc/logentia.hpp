@@ -13,6 +13,12 @@ namespace logentia {
     void detailed_log(std::string_view msg, std::string_view topic, int level,
                       const std::source_location& loc = std::source_location::current());
 
+    // ─────── overloads with title + body ───────
+    void log(std::string_view title, std::string_view body, std::string_view topic, int level);
+    void time_log(std::string_view title, std::string_view body, std::string_view topic, int level);
+    void detailed_log(std::string_view title, std::string_view body, std::string_view topic, int level,
+                      const std::source_location& loc = std::source_location::current());
+
     // ─────────── optional helpers ───────────
     /// Give the *current* thread a human-friendly name (shown in every log line).
     void set_thread_name(const std::string& name);

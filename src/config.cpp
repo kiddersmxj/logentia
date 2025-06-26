@@ -14,6 +14,9 @@ namespace logentia {
 
     int MaxLevel = 3;
     int  DetailLevel   = 0;
+
+    int IndentSpaces = 4;
+
     std::string FilePath    = "/log";                // root directory
     std::string ProjectName = "logentia_project";     // used if conf missing
     std::vector<std::string> TopicList;               // empty ⇒ all topics
@@ -42,6 +45,9 @@ namespace logentia {
         KCONFIG_VAR(config::MaxLevel,  "general.max_level", config::MaxLevel);
         KCONFIG_VAR(config::DetailLevel, "general.detail_level", config::DetailLevel);
         KCONFIG_VAR(config::FilePath,  "general.file_path", config::FilePath);
+
+        // [formatting]
+        KCONFIG_VAR(config::IndentSpaces, "formatting.indents", config::IndentSpaces);
 
         // [project]
         KCONFIG_VAR(config::ProjectName, "project.name", config::ProjectName);
